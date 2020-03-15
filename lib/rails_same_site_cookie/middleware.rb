@@ -1,5 +1,3 @@
-require 'rails_same_site_cookie/user_agent_checker'
-
 module RailsSameSiteCookie
   class Middleware
 
@@ -15,25 +13,22 @@ module RailsSameSiteCookie
       regex = RailsSameSiteCookie.configuration.user_agent_regex
       set_cookie = headers['Set-Cookie']
       if (regex.nil? or regex.match(env['HTTP_USER_AGENT'])) and not (set_cookie.nil? or set_cookie.strip == '')
-        parser = UserAgentChecker.new(env['HTTP_USER_AGENT'])
-        if parser.send_same_site_none?
-          cookies = set_cookie.split(COOKIE_SEPARATOR)
-          ssl = Rack::Request.new(env).ssl?
+        cookies = set_cookie.split(COOKIE_SEPARATOR)
+        ssl = Rack::Request.new(env).ssl?
 
-          cookies.each do |cookie|
-            next if cookie == '' or cookie.nil?
-            if ssl and not cookie =~ /;\s*secure/i
-              cookie << '; Secure'
-            end
-
-            unless cookie =~ /;\s*samesite=/i
-              cookie << '; SameSite=None'
-            end
-
+        cookies.each do |cookie|
+          next if cookie == '' or cookie.nil?
+          if ssl and not cookie =~ /;\s*secure/i
+            cookie << '; Secure'
           end
 
-          headers['Set-Cookie'] = cookies.join(COOKIE_SEPARATOR)
+          unless cookie =~ /;\s*samesite=/i
+            cookie << '; SameSite=None'
+          end
+
         end
+
+        headers['Set-Cookie'] = cookies.join(COOKIE_SEPARATOR)
       end
 
       [status, headers, body]
