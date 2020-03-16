@@ -10,9 +10,8 @@ module RailsSameSiteCookie
     def call(env)
       status, headers, body = @app.call(env)
 
-      regex = RailsSameSiteCookie.configuration.user_agent_regex
       set_cookie = headers['Set-Cookie']
-      if (regex.nil? or regex.match(env['HTTP_USER_AGENT'])) and not (set_cookie.nil? or set_cookie.strip == '')
+      if not (set_cookie.nil? or set_cookie.strip == '')
         cookies = set_cookie.split(COOKIE_SEPARATOR)
         ssl = Rack::Request.new(env).ssl?
 
